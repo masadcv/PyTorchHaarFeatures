@@ -4,12 +4,13 @@ import numpy as np
 import torch.nn as nn
 
 class HaarFeatures3d(nn.modules.Conv3d):
-    def __init__(self, kernel_size, stride=1, padding_mode='zeros'):
+    def __init__(self, kernel_size, padding=None, stride=1, padding_mode='zeros'):
         haar_weights = self.initialise_haar_weights3d(kernel_size=kernel_size)
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        padding = int(math.floor(haar_weights.shape[-1]/2))
+        if not padding:
+            padding = int(math.floor(haar_weights.shape[-1]/2))
 
         super(HaarFeatures3d, self).__init__(
             in_channels=in_channels,
@@ -105,12 +106,13 @@ class HaarFeatures3d(nn.modules.Conv3d):
         return all_features
 
 class HaarFeatures2d(nn.modules.Conv2d):
-    def __init__(self, kernel_size, stride=1, padding_mode='zeros'):
+    def __init__(self, kernel_size, padding=None, stride=1, padding_mode='zeros'):
         haar_weights = self.initialise_haar_weights2d(kernel_size=kernel_size)
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        padding = int(math.floor(haar_weights.shape[-1]/2))
+        if not padding:
+            padding = int(math.floor(haar_weights.shape[-1]/2))
 
         super(HaarFeatures2d, self).__init__(
             in_channels=in_channels,
