@@ -1,0 +1,1 @@
+from .haarfeatures import HaarFeatures2d, HaarFeatures3d
