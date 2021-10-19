@@ -9,7 +9,7 @@ class HaarFeatures3d(nn.modules.Conv3d):
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        if not padding:
+        if padding==None:
             padding = int(math.floor(haar_weights.shape[-1]/2))
 
         super(HaarFeatures3d, self).__init__(
@@ -111,7 +111,7 @@ class HaarFeatures2d(nn.modules.Conv2d):
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        if not padding:
+        if padding==None:
             padding = int(math.floor(haar_weights.shape[-1]/2))
 
         super(HaarFeatures2d, self).__init__(
