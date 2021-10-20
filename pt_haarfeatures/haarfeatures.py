@@ -3,16 +3,16 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+from torch.nn.modules import sparse
 
 
 class HaarFeatures3d(nn.modules.Conv3d):
-    def __init__(self, kernel_size, padding=None, stride=1, padding_mode="zeros"):
+    def __init__(self, kernel_size, padding="same", stride=1, padding_mode="zeros"):
+        # padding can be ["valid", "same"]
         haar_weights = self.initialise_haar_weights3d(kernel_size=kernel_size)
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        if padding == None:
-            padding = int(math.floor(haar_weights.shape[-1] / 2))
 
         super(HaarFeatures3d, self).__init__(
             in_channels=in_channels,
@@ -36,8 +36,10 @@ class HaarFeatures3d(nn.modules.Conv3d):
 
         if isinstance(kernel_size, list) or isinstance(kernel_size, tuple):
             assert len(kernel_size) == 3, "window size must be 3d"
+            # assert kernel_size[0]%2==1 and kernel_size[1]%2==1 and kernel_size[2]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
         else:
-            kernel_size = [kernel_size, kernel_size, kernel_size]
+            assert kernel_size%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
+            # kernel_size = [kernel_size, kernel_size, kernel_size]
 
         centerdim = tuple(math.ceil(x / 2) for x in kernel_size)
         kernel_size = tuple(kernel_size)
@@ -50,6 +52,30 @@ class HaarFeatures3d(nn.modules.Conv3d):
         )
 
         full_volume = torch.ones(kernel_size)
+
+        # sparse_volume = torch.from_numpy(np.array([float(x%2)*2-1 for x in range(full_volume.numel())], dtype=np.float32).reshape(kernel_size))
+        sparse_volume = torch.ones(kernel_size)
+        bit_write = True
+        for k0 in range(kernel_size[0]):
+            for k1 in range(kernel_size[1]):
+                for k2 in range(kernel_size[2]):
+                    sparse_volume[k0, k1, k2] = bit_write
+                    bit_write = not bit_write
+                
+                if kernel_size[2]%2 == 0:
+                    bit_write = not bit_write
+            
+            if kernel_size[1]%2 == 0:
+                bit_write = not bit_write
+        
+        if kernel_size[0]%2 == 0:
+            bit_write = not bit_write
+
+        sparse_volume = sparse_volume * 2 - 1
+        assert sparse_volume.sum() == 0 or sparse_volume.sum() == 1, "sparse volume kernel not aligned"
+        # print()
+        # print(sparse_volume.sum())
+        # print()
 
         half_volume_x = torch.ones(kernel_size)
         half_volume_x[:, :, centerdim[2]:] = -1
@@ -109,6 +135,7 @@ class HaarFeatures3d(nn.modules.Conv3d):
 
         mean_volume.unsqueeze_(dim=0)
         full_volume.unsqueeze_(dim=0)
+        sparse_volume.unsqueeze_(dim=0)
 
         half_volume_x.unsqueeze_(dim=0)
         half_volume_y.unsqueeze_(dim=0)
@@ -133,6 +160,7 @@ class HaarFeatures3d(nn.modules.Conv3d):
             [
                 mean_volume,
                 full_volume,
+                sparse_volume,
                 half_volume_x,
                 half_volume_y,
                 half_volume_z,
@@ -156,13 +184,12 @@ class HaarFeatures3d(nn.modules.Conv3d):
 
 
 class HaarFeatures2d(nn.modules.Conv2d):
-    def __init__(self, kernel_size, padding=None, stride=1, padding_mode="zeros"):
+    def __init__(self, kernel_size, padding="same", stride=1, padding_mode="zeros"):
+        # padding can be ["valid", "same"]
         haar_weights = self.initialise_haar_weights2d(kernel_size=kernel_size)
 
         in_channels = 1
         out_channels = haar_weights.shape[0]
-        if padding == None:
-            padding = int(math.floor(haar_weights.shape[-1] / 2))
 
         super(HaarFeatures2d, self).__init__(
             in_channels=in_channels,
@@ -185,8 +212,10 @@ class HaarFeatures2d(nn.modules.Conv2d):
     def initialise_haar_weights2d(self, kernel_size):
         if isinstance(kernel_size, list) or isinstance(kernel_size, tuple):
             assert len(kernel_size) == 2, "window size must be 2d"
+            # assert kernel_size[0]%2==1 and kernel_size[1]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
         else:
-            kernel_size = [kernel_size, kernel_size]
+            assert kernel_size%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
+            # kernel_size = [kernel_size, kernel_size]
 
         centerdim = tuple(math.ceil(x / 2) for x in kernel_size)
         onethirddim = tuple(math.ceil(x / 3) for x in kernel_size)
@@ -195,47 +224,94 @@ class HaarFeatures2d(nn.modules.Conv2d):
         # weights for 2d are of dimension Cout, Cin, H, W
         # Cin is always 1 for us, Cout is the dimension to concatenate all haar filters
 
-        mean_volume = torch.ones(kernel_size) / \
+        mean_area = torch.ones(kernel_size) / \
             (kernel_size[0] * kernel_size[1])
 
-        full_volume = torch.ones(kernel_size)
+        full_area = torch.ones(kernel_size)
 
-        two_vertical = torch.ones(kernel_size)
-        two_vertical[:, centerdim[1]:] = -1
+        # sparse_area = torch.from_numpy(np.array([float(x%2)*2-1 for x in range(full_area.numel())], dtype=np.float32).reshape(kernel_size))
+        sparse_area = torch.ones(kernel_size)
+        bit_write = True
+        for k0 in range(kernel_size[0]):
+            for k1 in range(kernel_size[1]):
+                sparse_area[k0, k1] = bit_write
+                bit_write = not bit_write
+                
+            if kernel_size[1]%2 == 0:
+                bit_write = not bit_write
+        
+        if kernel_size[0]%2 == 0:
+            bit_write = not bit_write
 
-        two_horizontal = torch.ones(kernel_size)
-        two_horizontal[centerdim[0]:, :] = -1
+        sparse_area = sparse_area * 2 - 1
+        assert sparse_area.sum() == 0 or sparse_area.sum() == 1, "sparse area kernel not aligned"
+        # print()
+        # print(sparse_area.sum())
+        # print()
 
-        three_vertical = torch.ones(kernel_size)
+        half_area_x = torch.ones(kernel_size)
+        half_area_x[:, centerdim[1]:] = -1
+
+        half_area_y = torch.ones(kernel_size)
+        half_area_y[centerdim[0]:, :] = -1
+
+        third_area_x = torch.ones(kernel_size)
         # goes negative from 1/3 to 2/3 of the way
-        three_vertical[:, onethirddim[1]: 2 * onethirddim[1]] = -1
+        third_area_x[:, onethirddim[1]: 2 * onethirddim[1]] = -1
 
-        three_horizontal = torch.ones(kernel_size)
+        third_area_y = torch.ones(kernel_size)
         # goes negative from 1/3 to 2/3 of the way
-        three_horizontal[onethirddim[0]: 2 * onethirddim[0], :] = -1
+        third_area_y[onethirddim[0]: 2 * onethirddim[0], :] = -1
 
-        four_horizontal_vertical = torch.ones(kernel_size)
+        quarter_area_xy = torch.ones(kernel_size)
         # goes negative for second and third square
-        four_horizontal_vertical[: centerdim[0], centerdim[1]:] = -1
-        four_horizontal_vertical[centerdim[0]:, : centerdim[1]] = -1
+        quarter_area_xy[: centerdim[0], centerdim[1]:] = -1
+        quarter_area_xy[centerdim[0]:, : centerdim[1]] = -1
 
-        mean_volume.unsqueeze_(dim=0)
-        full_volume.unsqueeze_(dim=0)
-        two_vertical.unsqueeze_(dim=0)
-        two_horizontal.unsqueeze_(dim=0)
-        three_vertical.unsqueeze_(dim=0)
-        three_horizontal.unsqueeze_(dim=0)
-        four_horizontal_vertical.unsqueeze_(dim=0)
+        half_quarter_area1_x = quarter_area_xy.detach().clone()
+        half_quarter_area1_x[:, :centerdim[1]] = 1
+
+        half_quarter_area2_x = quarter_area_xy.detach().clone()
+        half_quarter_area2_x[:, centerdim[1]:] = 1
+
+        half_quarter_area1_y = quarter_area_xy.detach().clone()
+        half_quarter_area1_y[:centerdim[0], :] = 1
+
+        half_quarter_area2_y = quarter_area_xy.detach().clone()
+        half_quarter_area2_y[centerdim[0]:, :] = 1
+
+        mean_area.unsqueeze_(dim=0)
+        full_area.unsqueeze_(dim=0)
+        sparse_area.unsqueeze_(dim=0)
+
+        half_area_x.unsqueeze_(dim=0)
+        half_area_y.unsqueeze_(dim=0)
+
+        third_area_x.unsqueeze_(dim=0)
+        third_area_y.unsqueeze_(dim=0)
+
+        quarter_area_xy.unsqueeze_(dim=0)
+
+        half_quarter_area1_x.unsqueeze_(dim=0)
+        half_quarter_area2_x.unsqueeze_(dim=0)
+
+        half_quarter_area1_y.unsqueeze_(dim=0)
+        half_quarter_area2_y.unsqueeze_(dim=0)
 
         all_features = torch.cat(
             [
-                mean_volume,
-                full_volume,
-                two_vertical,
-                two_horizontal,
-                three_vertical,
-                three_horizontal,
-                four_horizontal_vertical,
+                mean_area,
+                full_area,
+                sparse_area,
+                half_area_x,
+                half_area_y,
+                third_area_x,
+                third_area_y,
+                quarter_area_xy,
+                half_quarter_area1_x,
+                half_quarter_area2_x,
+                half_quarter_area1_y,
+                half_quarter_area2_y,
             ]
         )
 
@@ -245,17 +321,14 @@ class HaarFeatures2d(nn.modules.Conv2d):
 
 
 if __name__ == "__main__":
-    conv3d = nn.Conv3d(
-        in_channels=1, out_channels=8, kernel_size=9, stride=1, padding=4
-    )
-    output_orig = conv3d(torch.zeros(size=(1, 1, 128, 128, 128)))
-    print(output_orig.shape)
+    input2d = torch.rand(size=(1, 1, 128, 128))
+    input3d = torch.rand(size=(1, 1, 128, 128, 128))
 
-    haarfeat3d = HaarFeatures3d(kernel_size=(9, 9, 9), stride=1)
-    output_haar3d = haarfeat3d(torch.rand(size=(1, 1, 128, 128, 128)))
+    for i in [2, 3, 4, 5, 6, 7, 8, 9]:
+        haarfeat2d = HaarFeatures2d(kernel_size=(i, i), padding="same", stride=1)
+        output_haar2d = haarfeat2d(input2d)
+        assert output_haar2d.shape[2:] == input2d.shape[2:]
 
-    print(output_haar3d.shape)
-
-    haarfeat2d = HaarFeatures2d(kernel_size=(9, 9), stride=1)
-    output_haar2d = haarfeat2d(torch.rand(size=(1, 1, 128, 128)))
-    print(output_haar2d.shape)
+        haarfeat3d = HaarFeatures3d(kernel_size=(i, i, i), padding="same", stride=1)
+        output_haar3d = haarfeat3d(input3d)
+        assert output_haar3d.shape[2:] == input3d.shape[2:]
