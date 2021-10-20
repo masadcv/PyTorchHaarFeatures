@@ -36,10 +36,10 @@ class HaarFeatures3d(nn.modules.Conv3d):
 
         if isinstance(kernel_size, list) or isinstance(kernel_size, tuple):
             assert len(kernel_size) == 3, "window size must be 3d"
-            # assert kernel_size[0]%2==1 and kernel_size[1]%2==1 and kernel_size[2]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
         else:
-            assert kernel_size%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
-            # kernel_size = [kernel_size, kernel_size, kernel_size]
+            kernel_size = [kernel_size, kernel_size, kernel_size]
+
+        # assert kernel_size[0]%2==1 and kernel_size[1]%2==1 and kernel_size[2]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
 
         centerdim = tuple(math.ceil(x / 2) for x in kernel_size)
         kernel_size = tuple(kernel_size)
@@ -61,18 +61,19 @@ class HaarFeatures3d(nn.modules.Conv3d):
                 for k2 in range(kernel_size[2]):
                     sparse_volume[k0, k1, k2] = bit_write
                     bit_write = not bit_write
-                
-                if kernel_size[2]%2 == 0:
+
+                if kernel_size[2] % 2 == 0:
                     bit_write = not bit_write
-            
-            if kernel_size[1]%2 == 0:
+
+            if kernel_size[1] % 2 == 0:
                 bit_write = not bit_write
-        
-        if kernel_size[0]%2 == 0:
+
+        if kernel_size[0] % 2 == 0:
             bit_write = not bit_write
 
         sparse_volume = sparse_volume * 2 - 1
-        assert sparse_volume.sum() == 0 or sparse_volume.sum() == 1, "sparse volume kernel not aligned"
+        assert sparse_volume.sum() == 0 or sparse_volume.sum(
+        ) == 1, "sparse volume kernel not aligned"
         # print()
         # print(sparse_volume.sum())
         # print()
@@ -212,11 +213,10 @@ class HaarFeatures2d(nn.modules.Conv2d):
     def initialise_haar_weights2d(self, kernel_size):
         if isinstance(kernel_size, list) or isinstance(kernel_size, tuple):
             assert len(kernel_size) == 2, "window size must be 2d"
-            # assert kernel_size[0]%2==1 and kernel_size[1]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
         else:
-            assert kernel_size%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
-            # kernel_size = [kernel_size, kernel_size]
+            kernel_size = [kernel_size, kernel_size]
 
+        # assert kernel_size[0]%2==1 and kernel_size[1]%2==1, "at the moment odd kernel sizes are supported, received {}".format(kernel_size)
         centerdim = tuple(math.ceil(x / 2) for x in kernel_size)
         onethirddim = tuple(math.ceil(x / 3) for x in kernel_size)
         kernel_size = tuple(kernel_size)
@@ -236,15 +236,16 @@ class HaarFeatures2d(nn.modules.Conv2d):
             for k1 in range(kernel_size[1]):
                 sparse_area[k0, k1] = bit_write
                 bit_write = not bit_write
-                
-            if kernel_size[1]%2 == 0:
+
+            if kernel_size[1] % 2 == 0:
                 bit_write = not bit_write
-        
-        if kernel_size[0]%2 == 0:
+
+        if kernel_size[0] % 2 == 0:
             bit_write = not bit_write
 
         sparse_area = sparse_area * 2 - 1
-        assert sparse_area.sum() == 0 or sparse_area.sum() == 1, "sparse area kernel not aligned"
+        assert sparse_area.sum() == 0 or sparse_area.sum(
+        ) == 1, "sparse area kernel not aligned"
         # print()
         # print(sparse_area.sum())
         # print()
@@ -325,10 +326,17 @@ if __name__ == "__main__":
     input3d = torch.rand(size=(1, 1, 128, 128, 128))
 
     for i in [2, 3, 4, 5, 6, 7, 8, 9]:
-        haarfeat2d = HaarFeatures2d(kernel_size=(i, i), padding="same", stride=1)
+        haarfeat2d = HaarFeatures2d(
+            kernel_size=(i, i), padding="same", stride=1)
         output_haar2d = haarfeat2d(input2d)
         assert output_haar2d.shape[2:] == input2d.shape[2:]
 
-        haarfeat3d = HaarFeatures3d(kernel_size=(i, i, i), padding="same", stride=1)
+        haarfeat2d = HaarFeatures2d(
+            kernel_size=i, padding="same", stride=1)
+
+        haarfeat3d = HaarFeatures3d(kernel_size=(
+            i, i, i), padding="same", stride=1)
         output_haar3d = haarfeat3d(input3d)
         assert output_haar3d.shape[2:] == input3d.shape[2:]
+
+        haarfeat3d = HaarFeatures3d(kernel_size=i, padding="same", stride=1)
