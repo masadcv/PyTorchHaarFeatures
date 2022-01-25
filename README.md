@@ -87,7 +87,7 @@ class MyCatSegnentorHaarlike(nn.Module):
         return x   
 ```
 
-![image](./data/example3d_learning_figure_1.png)
+![image](./data/example2d_learning_figure_1.png)
 
 ## Citation
 If you use our code, please cite the following paper:
