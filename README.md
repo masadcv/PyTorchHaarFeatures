@@ -93,5 +93,7 @@ class MyCatSegnentorHaarlike(nn.Module):
 If you use our code, please cite the following paper:
 
 ```
-Asad, Muhammad, Lucas Fidon, and Tom Vercauteren. "ECONet: Efficient Convolutional Online Likelihood Network for Scribble-based Interactive Segmentation." arXiv preprint arXiv:2201.04584 (2022).
+Asad, Muhammad, Lucas Fidon, and Tom Vercauteren. 
+"ECONet: Efficient Convolutional Online Likelihood Network for Scribble-based Interactive Segmentation." 
+arXiv preprint arXiv:2201.04584 (2022).
 ```
