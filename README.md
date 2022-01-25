@@ -3,8 +3,11 @@ This repository implements Haar-Like features using convolutions in PyTorch.
 
 Within the repository, implementation is provided for the following:
 - **2D Haar-Like features** for Grayscale images following method from: Viola, Paul, and Michael Jones. "Rapid object detection using a boosted cascade of simple features." Proceedings of the 2001 IEEE computer society conference on computer vision and pattern recognition. CVPR 2001. Vol. 1. Ieee, 2001.
+![haar3d](./data/diagrams-Haar2D.png)
+
 
 - **3D Haar-Like features** for 3D image data, e.g. medical images, following method from: Jung, Florian, Matthias Kirschner, and Stefan Wesarg. "A generic approach to organ detection using 3d haar-like features." Bildverarbeitung für die Medizin 2013. Springer, Berlin, Heidelberg, 2013. 320-325.
+![haar3d](./data/diagrams-HaarHor3D.png)
 
 Both 2D and 3D versions of Haar-Like features have been implemented using convolutions in PyTorch and hence can be embedded into a given network where hand-crafted Haar-Like features are needed.
 
