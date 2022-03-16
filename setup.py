@@ -4,10 +4,11 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-setuptools.setup(name='pt_haarfeatures',
+setuptools.setup(name='torchhaarfeatures',
       version='0.1',
       description='Haar-like features using PyTorch',
       long_description=readme(),
+      long_description_content_type="text/markdown",
       classifiers=[
         'Operating System :: OS Independent',
         'License :: OSI Approved :: BSD License',
@@ -16,9 +17,9 @@ setuptools.setup(name='pt_haarfeatures',
       keywords='haar-like 2d 3d medical features hand-crafted',
       url='http://github.com/masadcv/PyTorchHaarFeatures',
       author='Muhammad Asad',
-      author_email='masadcv@gmail.com',
+      author_email='muhammad.asad@kcl.ac.uk',
       license='BSD-3-Clause',
-      packages=['pt_haarfeatures'],
+      packages=['torchhaarfeatures'],
       install_requires=[
           'torch',
       ],
