@@ -5,7 +5,7 @@ def readme():
         return f.read()
 
 setuptools.setup(name='torchhaarfeatures',
-      version='0.1',
+      version='0.0.1',
       description='Haar-like features using PyTorch',
       long_description=readme(),
       long_description_content_type="text/markdown",
