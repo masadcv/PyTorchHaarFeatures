@@ -4,7 +4,7 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-setuptools.setup(name='torchhaarfeatures',
+setuptools.setup(name='pt_haarfeatures',
       version='0.0.1',
       description='Haar-like features using PyTorch',
       long_description=readme(),
@@ -19,7 +19,7 @@ setuptools.setup(name='torchhaarfeatures',
       author='Muhammad Asad',
       author_email='muhammad.asad@kcl.ac.uk',
       license='BSD-3-Clause',
-      packages=['torchhaarfeatures'],
+      packages=['pt_haarfeatures'],
       install_requires=[
           'torch',
       ],
