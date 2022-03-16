@@ -1,4 +1,4 @@
-import pt_haarfeatures
+import torchhaarfeatures
 
 import numpy as np
 import torch
@@ -17,7 +17,7 @@ class MyCatSegnentorHaarlike(nn.Module):
         haar_padding="same",
     ):
         super().__init__()
-        self.haarfeatureextactor = pt_haarfeatures.HaarFeatures2d(
+        self.haarfeatureextactor = torchhaarfeatures.HaarFeatures2d(
             kernel_size=kernel_size,
             padding=haar_padding,
             stride=1,
