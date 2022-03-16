@@ -16,11 +16,11 @@ Reference code from https://github.com/rohitghosh/3DViolaJones helped us in init
 ## Installation
 This package can be installed as: 
 
-`pip install git+https://github.com/masadcv/PyTorchHaarFeatures`
+`pip install torchhaarfeatures`
 
 or 
 
-`pip install torchhaarfeatures
+`pip install git+https://github.com/masadcv/PyTorchHaarFeatures`
 
 ## Examples
 Usage examples are provided in example python files within the repository.
