@@ -1,4 +1,9 @@
 # Efficient implementation of Haar-like features using Convolution
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![PyPI version](https://badge.fury.io/py/torchhaarfeatures.svg)](https://badge.fury.io/py/torchhaarfeatures)
+<img src="https://img.shields.io/badge/Python-3.6%20|%203.7%20|%203.8%20|%203.9-3776ab.svg"/>
+<img src="https://img.shields.io/badge/PyTorch-%3E%3D%201.6-brightgreen.svg"/>
+
 This repository implements Haar-Like features using convolutions in PyTorch. 
 
 Within the repository, implementation is provided for the following:
